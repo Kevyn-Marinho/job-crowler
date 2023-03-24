@@ -1,20 +1,16 @@
+import { SiteEnum } from "./models";
+import { SiteFactory } from "./Services/SiteFactory";
 
-import Freelas99 from './99freelas/index';
-import Infojobs from './infojobs/index';
+var techs = [".net"];
 
-var techs = [".net"]
-
-let freelas = new Freelas99();
-let info = new Infojobs();
+let site = SiteFactory.create(SiteEnum.Infojobs);
 
 let crowler = async (tech: string) => {
   //  await freelas.run(tech);
-    await info.run(tech);
-}
+  await site.run(tech);
 
-techs.forEach(async e => {
-    await crowler(e).finally(() => 
-        console.log('fim'));
+};
 
+techs.forEach(async (e) => {
+  await crowler(e).finally(() => console.log("fim"));
 });
-

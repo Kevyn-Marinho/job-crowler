@@ -2,13 +2,12 @@
 import axios  from 'axios';
 import cheerio from 'cheerio';
 import fs from 'fs';
+import ISite from '../../models/ISite';
 
-import Site from '../site';
-
-export default class infojobs implements Site {
+export default class Freelas99 implements ISite {
     tech = '.net';
     actualPage: number = 0;
-    url = `https://www.infojobs.com.br/vagas-de-emprego-${this.tech}-em-sao-paulo,-sp.aspx?`;
+    url = `https://www.99freelas.com.br/projects?q=${this.tech}&order=mais-recentes&categoria=web-mobile-e-software`;
     dados: Array<any> = new Array<any>();
 
     async getPage(pageNumber: number) {
@@ -24,9 +23,10 @@ export default class infojobs implements Site {
 
     async readStrucutures(page: any, pageNumber: number) {
         let $ = cheerio.load(page.data);
-        var length = parseInt(($($('.js_PageItem')[$('.js_PageItem').length -1]).text()));
+        var length = $('.projects-result-header .page-item').length;
         
-         this.gerarArray($);
+        console.log(pageNumber);
+        this.gerarArray($);
 
         if (pageNumber < length){
             await this.getPage(++pageNumber);
@@ -36,19 +36,18 @@ export default class infojobs implements Site {
     gerarArray($: any) {
         let tech = this.tech;
        
-        $('.element-vaga').each((i: number, item: any) => {
+        $('.title a').each((i: number, item: any) => {
             let job = {
-                titulo: $(item).find('.vaga .vagaTitle').text().trim(),
-                url: $(item).find('.vaga .vagaTitle').attr('href'),
+                titulo: $(item).text(),
+                url: $(item).attr('href'),
                 tech
             }
-
             this.dados.push(job);
-        });       
+        });      
     }
 
     export() {
-        fs.writeFile("data-info.json", JSON.stringify(this.dados), "utf-8", () => { });
+        fs.writeFile("data.json", JSON.stringify(this.dados), "utf-8", () => { });
     }
 
     async run(tech: string){

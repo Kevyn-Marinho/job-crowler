@@ -4,7 +4,7 @@
   "description": "",
   "module": "CommonJS",
   "scripts": {
-    "start": "nodemon",
+    "start": "npx tsc && node dist/index.js",
     "start:prod": "node dist/index.js",
     "build": "npx tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"

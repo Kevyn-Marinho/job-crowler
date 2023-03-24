@@ -1,33 +1,33 @@
 
 import axios  from 'axios';
 import cheerio from 'cheerio';
+import { worker } from 'cluster';
 import fs from 'fs';
+import Site from '../../models/ISite';
 
-import Site from '../site';
 
-export default class Freelas99 implements Site {
+export default class Infojobs implements Site {
     tech = '.net';
     actualPage: number = 0;
-    url = `https://www.99freelas.com.br/projects?q=${this.tech}&order=mais-recentes&categoria=web-mobile-e-software`;
+    url = `https://www.infojobs.com.br/vagas-de-emprego-${this.tech}-em-sao-paulo,-sp.aspx?`;
     dados: Array<any> = new Array<any>();
 
     async getPage(pageNumber: number) {
-        console.log(this.url + `&page=${pageNumber}`)
-        await axios.get(this.url + `&page=${pageNumber}`)
+        console.log(this.url + `&page=${pageNumber}`);
+        await .fetch(this.url + `&page=${pageNumber}`)
         .then(async page => await this.readStrucutures(page, pageNumber))
         .catch((e) => {
             console.error(this.url + `&page=${pageNumber}`)
-            console.error(e.message)
+            console.error(e)
         } ) 
 
     }
 
     async readStrucutures(page: any, pageNumber: number) {
         let $ = cheerio.load(page.data);
-        var length = $('.projects-result-header .page-item').length;
+        var length = parseInt(($($('.js_PageItem')[$('.js_PageItem').length -1]).text()));
         
-        console.log(pageNumber);
-        this.gerarArray($);
+         this.gerarArray($);
 
         if (pageNumber < length){
             await this.getPage(++pageNumber);
@@ -37,18 +37,19 @@ export default class Freelas99 implements Site {
     gerarArray($: any) {
         let tech = this.tech;
        
-        $('.title a').each((i: number, item: any) => {
+        $('.element-vaga').each((i: number, item: any) => {
             let job = {
-                titulo: $(item).text(),
-                url: $(item).attr('href'),
+                titulo: $(item).find('.vaga .vagaTitle').text().trim(),
+                url: $(item).find('.vaga .vagaTitle').attr('href'),
                 tech
             }
+
             this.dados.push(job);
-        });      
+        });       
     }
 
     export() {
-        fs.writeFile("data.json", JSON.stringify(this.dados), "utf-8", () => { });
+        fs.writeFile("data-info.json", JSON.stringify(this.dados), "utf-8", () => { });
     }
 
     async run(tech: string){
